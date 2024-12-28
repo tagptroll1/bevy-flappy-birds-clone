@@ -1,0 +1,39 @@
+[package]
+name = "flappyboi"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { version = "0.15.0"}
+rand = "0.8.5"
+
+[feature]
+dev_mode = ["bevy/bevy_dev_tools", "other_dev_tools"]
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+
+# Optimize for size in the wasm-release profile to reduce load times and bandwidth usage on web.
+[profile.wasm-release]
+# Default to release profile values.
+inherits = "release"
+# Optimize with size in mind (also try "z", sometimes it is better).
+# Slightly slows compile times, great improvements to file size and runtime performance.
+opt-level = "z"
+# Strip all debugging information from the binary to slightly reduce file size.
+strip = "debuginfo"
+
+[profile.release]
+opt-level = "z"
+strip = "symbols"
+lto = "fat"
+codegen-units = 1
+panic = 'abort'
+
+[profile.release.package."*"]
+strip = "symbols"
+codegen-units = 1
