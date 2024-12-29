@@ -2,7 +2,7 @@ use super::Score;
 use crate::game::{DeathSound, FlopSound, WohoSound};
 use crate::input::JumpEvent;
 use crate::pipes::{pipe_to_aabb2d, Pipe};
-use crate::{input, GameState, Highscore};
+use crate::{despawn_screen, input, GameState, Highscore};
 use bevy::asset::embedded_asset;
 use bevy::math::bounding::{Aabb2d, BoundingCircle, IntersectsVolume};
 use bevy::prelude::*;
@@ -37,7 +37,8 @@ impl Plugin for PlayerPlugin {
                     .run_if(in_state(GameState::Game)),
             )
             // This would need to check on GameState?
-            .add_systems(Startup, spawn_player);
+            .add_systems(OnEnter(GameState::Game), spawn_player)
+            .add_systems(OnExit(GameState::Game), despawn_screen::<Bird>);
     }
 }
 
@@ -52,7 +53,6 @@ fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
             translation: Vec3::new(200., SCREEN_HEIGHT / 2., 0.),
             ..default()
         },
-        //Debuggable,
     ));
 }
 
@@ -64,12 +64,9 @@ fn check_bounds(
 ) {
     let (mut transform, mut bird) = bird_q.single_mut();
     if (transform.translation.y - transform.scale.y / 2.) <= 0. {
-        game_state.set(GameState::Menu);
-        transform.translation.y = SCREEN_HEIGHT / 2.;
-        transform.rotation = Quat::from_rotation_z(0.);
-        bird.speed = 0.;
-        bird.angle = 0.;
+        game_state.set(GameState::DeathScreen);
         commands.spawn((AudioPlayer(death_sound.clone()), PlaybackSettings::DESPAWN));
+        reset_bird(&mut bird, &mut transform);
     }
 }
 
@@ -109,7 +106,17 @@ fn jump(
     }
     bird.angle = bird.angle.clamp(-90.0, 30.0);
     transform.rotation = Quat::from_rotation_z(bird.angle.to_radians());
+
+    // // DEBUG
+    // gizmos.rect_2d(
+    //     Isometry2d::new(
+    //         transform.translation.truncate(),
+    //         Rot2::from(bird.angle),
+    //     ),
+    //     Vec2::from(PLAYER_SIZE),
+    //     Color::srgb(1., 1., 1.));
 }
+
 fn give_score_for_passing(
     mut score: ResMut<Score>,
     mut highscore: ResMut<Highscore>,
@@ -142,22 +149,25 @@ fn give_score_for_passing(
 }
 
 fn check_pipe_collision(
-    bird_q: Single<&Transform, (With<Bird>, Without<Pipe>)>,
+    bird_q: Single<(&mut Transform, &mut Bird), Without<Pipe>>,
     pipes_q: Query<(&Transform, &Pipe), Without<Bird>>,
     mut game_state: ResMut<NextState<GameState>>,
     mut commands: Commands,
     death_sound: Res<DeathSound>,
 ) {
-    let bird_transform = bird_q.into_inner();
+    let (mut bird_transform, mut bird) = bird_q.into_inner();
     for (pipe_transform, pipe) in pipes_q.iter() {
+        let b_translate = bird_transform.translation.truncate();
+        let bird_circle = BoundingCircle::new(b_translate, PLAYER_SIZE.1 / 2.);
         let collides = bird_collides(
-            BoundingCircle::new(bird_transform.translation.truncate(), PLAYER_SIZE.1 / 2.),
+            bird_circle,
             pipe_to_aabb2d(pipe_transform, pipe.flipped),
         );
 
         if collides {
-            game_state.set(GameState::Menu);
+            game_state.set(GameState::DeathScreen);
             commands.spawn((AudioPlayer(death_sound.clone()), PlaybackSettings::DESPAWN));
+            reset_bird(&mut bird, &mut bird_transform);
         }
     }
 }
@@ -166,4 +176,11 @@ fn check_pipe_collision(
 // The returned `Collision` is the side of `bounding_box` that `ball` hit.
 fn bird_collides(bird: BoundingCircle, bounding_box: Aabb2d) -> bool {
     bird.intersects(&bounding_box)
+}
+
+fn reset_bird(bird: &mut Bird, transform: &mut Transform) {
+    transform.translation.y = SCREEN_HEIGHT / 2.;
+    transform.rotation = Quat::from_rotation_z(0.);
+    bird.speed = 0.;
+    bird.angle = 0.;
 }

@@ -2,7 +2,7 @@ use super::{despawn_screen, GameState};
 use bevy::asset::embedded_asset;
 use bevy::math::bounding::Aabb2d;
 use bevy::prelude::*;
-use bevy::sprite::Anchor::TopLeft;
+use bevy::sprite::Anchor::TopCenter;
 use rand::Rng;
 
 pub struct PipesPlugin;
@@ -28,7 +28,7 @@ const PIPE_GAP: f32 = 250.;
 const PIPE_SPEED: f32 = 150.;
 const PIPE_Y_RANGE_MIN: i32 = 70;
 const PIPE_Y_RANGE_MAX: i32 = 300;
-const PIPE_WIDTH: f32 = 30.0; // Width of the pipe sprite
+const PIPE_WIDTH: f32 = 52.0; // Width of the pipe sprite
 const PIPE_HEIGHT: f32 = 320.0; // Height of the pipe sprite
 
 fn spawn_pipes(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -45,7 +45,7 @@ fn spawn_pipes(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             Sprite {
                 image: asset_server.load("embedded://flappyboi/../assets/pipe.png"),
-                anchor: TopLeft,
+                anchor: TopCenter,
                 ..default()
             },
             Transform {
@@ -60,7 +60,7 @@ fn spawn_pipes(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             Sprite {
                 image: asset_server.load("embedded://flappyboi/../assets/pipe.png"),
-                anchor: TopLeft,
+                anchor: TopCenter,
                 ..default()
             },
             Transform {
@@ -72,7 +72,10 @@ fn spawn_pipes(mut commands: Commands, asset_server: Res<AssetServer>) {
     }
 }
 
-fn move_pipes(mut pipe_q: Query<(&mut Transform, &mut Pipe)>, time: Res<Time>) {
+fn move_pipes(
+    mut pipe_q: Query<(&mut Transform, &mut Pipe)>,
+    time: Res<Time>,
+) {
     let mut random = rand::thread_rng();
     let this_loops_random_y = random.gen_range(PIPE_Y_RANGE_MIN..PIPE_Y_RANGE_MAX) as f32;
     let mut end_spawn = 0.;

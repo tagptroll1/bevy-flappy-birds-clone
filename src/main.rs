@@ -11,20 +11,19 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::{env, fs};
 
+use bevy::audio::Volume;
 use bevy::input::common_conditions::input_pressed;
 use bevy::prelude::*;
 use bevy::window::{PresentMode, WindowTheme};
 
-const SCOREBOARD_FONT_SIZE: f32 = 33.0;
-const SCOREBOARD_TEXT_PADDING: Val = Val::Px(5.0);
-const TEXT_COLOR: Color = Color::srgb(0.5, 0.5, 1.0);
-const SCORE_COLOR: Color = Color::srgb(1.0, 0.5, 0.5);
+
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 enum GameState {
     #[default]
     Splash,
     Menu,
+    DeathScreen,
     Game,
 }
 
@@ -34,12 +33,6 @@ pub struct Score(pub usize);
 #[derive(Resource, Deref, DerefMut)]
 pub struct Highscore(pub usize);
 
-#[derive(Component)]
-struct ScoreboardUi;
-
-#[derive(Component)]
-struct HighscoreboardUi;
-// This resource tracks the game's score
 
 fn main() {
     let mut app = App::new();
@@ -66,7 +59,6 @@ fn main() {
     )
     .add_systems(Update, exit_game.run_if(input_pressed(KeyCode::Escape)))
     .add_systems(Startup, setup)
-    .add_systems(Update, update_scoreboard)
     //.add_plugins(debug::DebugPlugin)
     .init_state::<GameState>()
     .add_plugins((game::GamePlugin, splash::SplashPlugin, menu::MenuPlugin))
@@ -84,57 +76,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         asset_server.load::<AudioSource>("embedded://flappyboi/../assets/audio/themesong.ogg");
     commands.insert_resource(Score(0));
     commands.insert_resource(Highscore(file_score));
-    // Scoreboard
-    commands
-        .spawn((
-            Text::new("Score: "),
-            TextFont {
-                font_size: SCOREBOARD_FONT_SIZE,
-                ..default()
-            },
-            TextColor(TEXT_COLOR),
-            ScoreboardUi,
-            Node {
-                position_type: PositionType::Absolute,
-                top: SCOREBOARD_TEXT_PADDING,
-                left: SCOREBOARD_TEXT_PADDING,
-                ..default()
-            },
-        ))
-        .with_child((
-            TextSpan::default(),
-            TextFont {
-                font_size: SCOREBOARD_FONT_SIZE,
-                ..default()
-            },
-            TextColor(SCORE_COLOR),
-        ));
-
-    commands
-        .spawn((
-            Text::new("Highscore: "),
-            TextFont {
-                font_size: SCOREBOARD_FONT_SIZE,
-                ..default()
-            },
-            TextColor(TEXT_COLOR),
-            HighscoreboardUi,
-            Node {
-                display: Display::None,
-                position_type: PositionType::Absolute,
-                top: add_to_px(SCOREBOARD_TEXT_PADDING, 50.),
-                left: SCOREBOARD_TEXT_PADDING,
-                ..default()
-            },
-        ))
-        .with_child((
-            TextSpan::default(),
-            TextFont {
-                font_size: SCOREBOARD_FONT_SIZE,
-                ..default()
-            },
-            TextColor(SCORE_COLOR),
-        ));
 
     commands.spawn((
         Camera2d::default(),
@@ -144,31 +85,20 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
     ));
 
-    commands.spawn((AudioPlayer(theme_song.clone()), PlaybackSettings::LOOP));
+    commands.spawn((
+        AudioPlayer(theme_song.clone()),
+        PlaybackSettings{
+            mode: bevy::audio::PlaybackMode::Loop,
+            volume: Volume::new(0.5),
+            ..default()
+        },
+    ));
 }
 
 // Generic system that takes a component as a parameter, and will despawn all entities with that component
 fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
     for entity in &to_despawn {
         commands.entity(entity).despawn_recursive();
-    }
-}
-
-fn update_scoreboard(
-    score: Res<Score>,
-    highscore: Res<Highscore>,
-    score_root: Single<Entity, (With<ScoreboardUi>, With<Text>)>,
-    highscore_root: Single<Entity, (With<HighscoreboardUi>, With<Text>)>,
-    mut writer: TextUiWriter,
-) {
-    *writer.text(*score_root, 1) = score.to_string();
-    *writer.text(*highscore_root, 1) = highscore.to_string();
-}
-
-fn add_to_px(val: Val, amount: f32) -> Val {
-    match val {
-        Val::Px(px) => Val::Px(px + amount),
-        _ => val,
     }
 }
 
