@@ -53,7 +53,10 @@ fn game_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             anchor: bevy::sprite::Anchor::BottomLeft,
             ..default()
         },
-        Transform::default(),
+        Transform{
+            translation: Vec3::new(0., 0., -10.),
+            ..default()
+        },
     ));
 
     commands.spawn((
@@ -65,7 +68,7 @@ fn game_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         Transform {
-            translation: Vec3::new(BACKGROUND_WIDTH, 0., 0.),
+            translation: Vec3::new(BACKGROUND_WIDTH, 0., -10.),
             ..default()
         }
     ));

@@ -49,7 +49,7 @@ fn spawn_pipes(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             Transform {
-                translation: Vec3::new(400. + (i as f32 * PIPE_GAP), bot_y, 0.),
+                translation: Vec3::new(400. + (i as f32 * PIPE_GAP), bot_y, 1.),
                 ..default()
             },
         ));
@@ -64,7 +64,7 @@ fn spawn_pipes(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             Transform {
-                translation: Vec3::new(400. + (i as f32 * PIPE_GAP), top_y, 0.),
+                translation: Vec3::new(400. + (i as f32 * PIPE_GAP), top_y, 1.),
                 scale: Vec3::new(1., -1., 1.),
                 ..default()
             },

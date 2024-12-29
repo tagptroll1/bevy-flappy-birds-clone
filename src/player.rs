@@ -50,7 +50,7 @@ fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         Transform {
-            translation: Vec3::new(200., SCREEN_HEIGHT / 2., 0.),
+            translation: Vec3::new(200., SCREEN_HEIGHT / 2., 5.),
             ..default()
         },
     ));
@@ -158,7 +158,7 @@ fn check_pipe_collision(
     let (mut bird_transform, mut bird) = bird_q.into_inner();
     for (pipe_transform, pipe) in pipes_q.iter() {
         let b_translate = bird_transform.translation.truncate();
-        let bird_circle = BoundingCircle::new(b_translate, PLAYER_SIZE.1 / 2.);
+        let bird_circle = BoundingCircle::new(b_translate, (PLAYER_SIZE.1 / 2.) - 1.);
         let collides = bird_collides(
             bird_circle,
             pipe_to_aabb2d(pipe_transform, pipe.flipped),

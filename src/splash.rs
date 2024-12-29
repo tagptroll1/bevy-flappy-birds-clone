@@ -57,5 +57,5 @@ fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ));
         });
     // Spawn timer
-    commands.insert_resource(SplashTimer(Timer::from_seconds(1.5, TimerMode::Once)));
+    commands.insert_resource(SplashTimer(Timer::from_seconds(0.5, TimerMode::Once)));
 }

@@ -28,8 +28,8 @@ impl Plugin for MenuPlugin {
 
 const SCOREBOARD_FONT_SIZE: f32 = 33.0;
 const SCOREBOARD_TEXT_PADDING: Val = Val::Px(5.0);
-const TEXT_COLOR: Color = Color::srgb(0.8, 0.8, 0.);
-const SCORE_COLOR: Color = Color::srgb(1.0, 0.5, 0.5);
+const TEXT_COLOR: Color = Color::BLACK;
+const SCORE_COLOR: Color = Color::srgb(1.0, 0.7, 0.1);
 const RETRY_TEXT_COLOR: Color = Color::srgb(0.1, 0., 0.);
 
 #[derive(Component)]
@@ -166,16 +166,16 @@ fn hide_score(
 }
 
 fn show_highscore(
+    highscore: Res<Highscore>,
     mut highscore_ui: Single<(&mut HighscoreboardUi, &mut Node), Without<ScoreboardUi>>,
 ) {
+    write_highscore(**highscore);
     highscore_ui.1.as_mut().display = Display::Block;
 }
 
 fn hide_highscore(
-    highscore: Res<Highscore>,
     mut highscore_ui: Single<(&mut HighscoreboardUi, &mut Node), Without<ScoreboardUi>>,
 ){
-    write_highscore(**highscore);
     highscore_ui.1.as_mut().display = Display::None;
 }
 
