@@ -6,6 +6,7 @@ use crate::{despawn_screen, input, GameState, Highscore};
 use bevy::asset::embedded_asset;
 use bevy::math::bounding::{Aabb2d, BoundingCircle, IntersectsVolume};
 use bevy::prelude::*;
+use rand::Rng;
 
 const GRAVITY: f32 = -600.;
 const MAX_FALL_SPEED: f32 = -800.;
@@ -65,7 +66,15 @@ fn check_bounds(
     let (mut transform, mut bird) = bird_q.single_mut();
     if (transform.translation.y - transform.scale.y / 2.) <= 0. {
         game_state.set(GameState::DeathScreen);
-        commands.spawn((AudioPlayer(death_sound.clone()), PlaybackSettings::DESPAWN));
+        let mut rng = rand::thread_rng();
+        commands.spawn((
+            AudioPlayer(death_sound.clone()),
+            PlaybackSettings {
+                mode: bevy::audio::PlaybackMode::Despawn,
+                speed: rng.gen_range(0.95..=1.05),
+                ..PlaybackSettings::ONCE
+            },
+        ));
         reset_bird(&mut bird, &mut transform);
     }
 }
@@ -84,7 +93,15 @@ fn jump(
 
     if jumped {
         bird.speed = PLAYER_JUMP_SPEED;
-        commands.spawn((AudioPlayer(flop_sound.clone()), PlaybackSettings::DESPAWN));
+        let mut rng = rand::thread_rng();
+        commands.spawn((
+            AudioPlayer(flop_sound.clone()),
+            PlaybackSettings {
+                mode: bevy::audio::PlaybackMode::Despawn,
+                speed: rng.gen_range(0.95..=1.05),
+                ..PlaybackSettings::ONCE
+            },
+        ));
     } else {
         bird.speed += GRAVITY * dt;
         bird.speed = bird.speed.max(MAX_FALL_SPEED);
@@ -159,10 +176,7 @@ fn check_pipe_collision(
     for (pipe_transform, pipe) in pipes_q.iter() {
         let b_translate = bird_transform.translation.truncate();
         let bird_circle = BoundingCircle::new(b_translate, (PLAYER_SIZE.1 / 2.) - 1.);
-        let collides = bird_collides(
-            bird_circle,
-            pipe_to_aabb2d(pipe_transform, pipe.flipped),
-        );
+        let collides = bird_collides(bird_circle, pipe_to_aabb2d(pipe_transform, pipe.flipped));
 
         if collides {
             game_state.set(GameState::DeathScreen);
