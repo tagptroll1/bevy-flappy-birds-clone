@@ -47,13 +47,13 @@ fn game_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn((
         BackgroundTile,
-        Sprite{
+        Sprite {
             image: asset_server.load("embedded://flappyboi/../assets/bg.png"),
             custom_size: Some(Vec2::new(400., 400.)),
             anchor: bevy::sprite::Anchor::BottomLeft,
             ..default()
         },
-        Transform{
+        Transform {
             translation: Vec3::new(0., 0., -10.),
             ..default()
         },
@@ -70,14 +70,11 @@ fn game_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         Transform {
             translation: Vec3::new(BACKGROUND_WIDTH, 0., -10.),
             ..default()
-        }
+        },
     ));
 }
 
-fn move_background(
-    mut background_q: Query<&mut Transform, With<BackgroundTile>>,
-    time: Res<Time>,
-) {
+fn move_background(mut background_q: Query<&mut Transform, With<BackgroundTile>>, time: Res<Time>) {
     for mut transform in background_q.iter_mut() {
         transform.translation.x -= BACKGROUND_SPEED * time.delta_secs();
         if transform.translation.x < -BACKGROUND_WIDTH {

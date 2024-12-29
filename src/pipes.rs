@@ -72,10 +72,7 @@ fn spawn_pipes(mut commands: Commands, asset_server: Res<AssetServer>) {
     }
 }
 
-fn move_pipes(
-    mut pipe_q: Query<(&mut Transform, &mut Pipe)>,
-    time: Res<Time>,
-) {
+fn move_pipes(mut pipe_q: Query<(&mut Transform, &mut Pipe)>, time: Res<Time>) {
     let mut random = rand::thread_rng();
     let this_loops_random_y = random.gen_range(PIPE_Y_RANGE_MIN..PIPE_Y_RANGE_MAX) as f32;
     let mut end_spawn = 0.;

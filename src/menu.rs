@@ -14,14 +14,24 @@ impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         embedded_asset!(app, "../assets/fonts/FiraSans-Bold.ttf");
         app.add_systems(OnEnter(GameState::Menu), (menu_setup, hide_score))
-            .add_systems(OnExit(GameState::Menu),(despawn_screen::<OnMenuScreen>, show_score))
-            .add_systems(OnEnter(GameState::DeathScreen), (show_score, show_highscore, death_menu_setup))
-            .add_systems(OnExit(GameState::DeathScreen), (despawn_screen::<OnDeathScreen>, hide_highscore))
+            .add_systems(
+                OnExit(GameState::Menu),
+                (despawn_screen::<OnMenuScreen>, show_score),
+            )
+            .add_systems(
+                OnEnter(GameState::DeathScreen),
+                (show_score, show_highscore, death_menu_setup),
+            )
+            .add_systems(
+                OnExit(GameState::DeathScreen),
+                (despawn_screen::<OnDeathScreen>, hide_highscore),
+            )
             .add_systems(Startup, setup_score_ui)
             .add_systems(Update, update_scoreboard.run_if(in_state(GameState::Game)))
             .add_systems(
                 Update,
-                (close_menu_action).run_if(in_state(GameState::Menu).or(in_state(GameState::DeathScreen))),
+                (close_menu_action)
+                    .run_if(in_state(GameState::Menu).or(in_state(GameState::DeathScreen))),
             );
     }
 }
@@ -153,15 +163,11 @@ fn death_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-fn show_score(
-    mut score_ui: Single<(&mut ScoreboardUi, &mut Node), Without<HighscoreboardUi>>,
-) {
+fn show_score(mut score_ui: Single<(&mut ScoreboardUi, &mut Node), Without<HighscoreboardUi>>) {
     score_ui.1.as_mut().display = Display::Block;
 }
 
-fn hide_score(
-    mut score_ui: Single<(&mut ScoreboardUi, &mut Node), Without<HighscoreboardUi>>,
-){
+fn hide_score(mut score_ui: Single<(&mut ScoreboardUi, &mut Node), Without<HighscoreboardUi>>) {
     score_ui.1.as_mut().display = Display::None;
 }
 
@@ -175,7 +181,7 @@ fn show_highscore(
 
 fn hide_highscore(
     mut highscore_ui: Single<(&mut HighscoreboardUi, &mut Node), Without<ScoreboardUi>>,
-){
+) {
     highscore_ui.1.as_mut().display = Display::None;
 }
 
@@ -230,7 +236,6 @@ fn write_highscore(highscore: usize) {
         error!("Failed to write highscore: {}", e);
     }
 }
-
 
 fn add_to_px(val: Val, amount: f32) -> Val {
     match val {

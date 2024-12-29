@@ -16,8 +16,6 @@ use bevy::input::common_conditions::input_pressed;
 use bevy::prelude::*;
 use bevy::window::{PresentMode, WindowTheme};
 
-
-
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 enum GameState {
     #[default]
@@ -32,7 +30,6 @@ pub struct Score(pub usize);
 
 #[derive(Resource, Deref, DerefMut)]
 pub struct Highscore(pub usize);
-
 
 fn main() {
     let mut app = App::new();
@@ -87,7 +84,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn((
         AudioPlayer(theme_song.clone()),
-        PlaybackSettings{
+        PlaybackSettings {
             mode: bevy::audio::PlaybackMode::Loop,
             volume: Volume::new(0.5),
             ..default()
